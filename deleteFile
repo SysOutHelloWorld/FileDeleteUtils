@@ -1,0 +1,35 @@
+/**
+	 * 删除文件，同时删除空文件夹
+	 * @param req 
+	 * @param filePath 文件路径
+	 * @param blf 输入true .防止并发参数
+	 * @return
+	 */
+	public static Boolean deleteFile(HttpServletRequest req,String filePath,Boolean blf){
+		String dir = "";
+		if(blf){
+			dir = req.getSession().getServletContext().getRealPath("uoload");
+		}
+		//获取File对象
+		File file = new File(dir+"/"+filePath);
+		//判断该目录是否存在
+		if(!file.exists()){//若不存在，指定为删除成功
+			return true;
+		}
+		//判断File对象是目录还是文件
+		if(file.isDirectory()){//若File对象是目录
+					if(file.delete()){// 若是空目录,删除成功，继续递归
+						return deleteFile(req,file.getParent(),false);
+					}else{//若是非空目录，删除失败
+						return true;//删除失败，返回删除文件成功
+					}
+			
+		}else{//若File对象是文件
+			if(file.delete()){//删除文件，并判断删除结果，
+				//删除成功，获取文件的上级目录,递归删除文件夹
+				return deleteFile(req,file.getParent(),false);
+			}else{
+				return false;//删除文件失败
+			}
+		}
+	}
